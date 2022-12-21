@@ -5,9 +5,10 @@ import yaml
 import pprint as pp
 import xml.etree.ElementTree as et
 import os
+import itertools
 
 
-def yaml_to_xml(javaclass_name, yaml_obj):
+def yaml_to_xml(javaclass_name, root_tag_name, rule_list):
     def fill_children_tags(xml_root, yaml):
         if not len(yaml):
             return
@@ -20,23 +21,40 @@ def yaml_to_xml(javaclass_name, yaml_obj):
             xml_el = et.SubElement(xml_root, key)
             fill_children_tags(xml_el, el)
 
-    callexpr_tag = et.Element('CallRules.{}'.format(javaclass_name))
-    for yaml_rule in yaml_obj:
+    root_tag = et.Element(root_tag_name)
+    for rule in rule_list:
+        attributes = rule['Attributes']
+        attributes['javaType'] = javaclass_name
         rule_tag = et.SubElement(
-            callexpr_tag, yaml_rule['Type'], yaml_rule['Attributes'])
-        fill_children_tags(rule_tag, yaml_rule['Body'])
-        # rule_tag.append(et.Comment(yaml_rule['Comment']))
-    return callexpr_tag
+            root_tag, rule['Type'], rule['Attributes'])
+        if 'Body' in rule.keys():
+            fill_children_tags(rule_tag, rule['Body'])
+    return root_tag
 
 
 def main():
     yaml_path = sys.argv[1]
     xml_path = sys.argv[2]
+    root_tag = et.Element('JavaApiMappingRules')
     javaclass_name = os.path.splitext(os.path.basename(yaml_path))[0]
+
+    def grouper(item): return item['Type']
+
     with open(yaml_path, 'r') as yaml_file:
-        yaml_obj = yaml.load(yaml_file, Loader=yaml.FullLoader)
-        xml = yaml_to_xml(javaclass_name, yaml_obj)
-    et.ElementTree(xml).write(xml_path)
+        all_rules = yaml.load(yaml_file, Loader=yaml.FullLoader)
+        for key, group_items in itertools.groupby(all_rules, key=grouper):
+            rules = list(group_items)
+            if key == 'CallExpressionRule':
+                root_tag.append(yaml_to_xml(javaclass_name,
+                                            'CallRules.{}'.format(javaclass_name), rules))
+            elif key == 'MemberAccessExpressionRule':
+                root_tag.append(yaml_to_xml(javaclass_name,
+                                            'MemberAccessRules', rules))
+            elif key == 'TypeReferenceRule':
+                root_tag.append(yaml_to_xml(javaclass_name,
+                                            'TypeReferenceRules', rules))
+
+    et.ElementTree(root_tag).write(xml_path)
 
 
 main()

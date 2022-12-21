@@ -8,12 +8,49 @@ import yaml
 import itertools
 
 
-def rules_from_apis(raw_path):
-    filename = os.path.basename(raw_path)
+def parse_fields(data_path, out_path):
+    filename = os.path.splitext(os.path.basename(data_path))[0]
     rules = []
-    with open(raw_path, 'r') as raw_file:
-        for api in raw_file:
+    with open(data_path, 'r') as data_file:
+        for line in data_file:
+            if '# Fields' in line:
+                break
+        for field in data_file:
+            field = field.strip()
+            if not len(field):
+                continue
+            if '#' in field:
+                break
+
+            rule = {}
+            rule['Type'] = 'MemberAccessExpressionRule'
+            rule['Attributes'] = {
+                'javaMemberName': field,
+                'arktsName': ""
+            }
+            rules.append(rule)
+    with open(out_path, 'a') as yaml_file:
+        yaml_file.write('#\n# Fields {}\n#\n'.format(
+            os.path.basename(data_path)))
+        yaml.dump(rules, yaml_file, indent=4,
+                  encoding='utf-8', sort_keys=False)
+
+
+def rules_from_apis(data_path):
+    filename = os.path.splitext(os.path.basename(data_path))[0]
+    rules = []
+    with open(data_path, 'r') as data_file:
+        for line in data_file:
+            if '# API' in line:
+                break
+
+        for api in data_file:
             api = api.replace('\xa0', '\x20').replace(u"\u200B", '').strip()
+            if not len(api):
+                continue
+            if '#' in api:
+                break
+
             paren_i = api.find('(')
             arg_list = api[paren_i+1:-2]
             arguments = arg_list.split(',')
@@ -29,7 +66,6 @@ def rules_from_apis(raw_path):
             rule = {}
             rule['Type'] = 'CallExpressionRule'
             rule['Attributes'] = {
-                'javaType': filename,
                 'javaMethodName': name,
                 'javaMethodArgs': signature
             }
@@ -40,20 +76,37 @@ def rules_from_apis(raw_path):
     return rules
 
 
-def main():
-    raw_path = sys.argv[1]
-    rules_path = sys.argv[2]
-    logging.getLogger().setLevel(logging.INFO)
-
-    rules = rules_from_apis(raw_path)
-
+def parse_api(data_path, out_path):
+    rules = rules_from_apis(data_path)
     def grouper(item): return item['Attributes']['javaMethodName']
-    with open(rules_path, 'w+') as yaml_file:
+    with open(out_path, 'w+') as yaml_file:
         for key, group_items in itertools.groupby(rules, key=grouper):
             yaml_file.write('#\n# {}.{}\n#\n'.format(
-                os.path.basename(raw_path), key))
+                os.path.splitext(os.path.basename(data_path))[0], key))
             yaml.dump(list(group_items), yaml_file, indent=4,
                       encoding='utf-8', sort_keys=False)
+
+
+def add_typeref(out_path):
+    with open(out_path, 'a') as yaml_file:
+        yaml.dump([{
+            'Type': 'TypeReferenceRule',
+            'Attributes': {
+                'arktsName': ""
+            }
+        }], yaml_file, indent=4,
+            encoding='utf-8', sort_keys=False)
+
+
+def main():
+    logging.getLogger().setLevel(logging.INFO)
+
+    data_path = sys.argv[1]
+    out_path = sys.argv[2]
+
+    parse_api(data_path, out_path)
+    parse_fields(data_path, out_path)
+    add_typeref(out_path)
 
 
 main()

@@ -6,10 +6,10 @@ import pprint as pp
 import os
 import yaml
 import itertools
+import argparse
 
 
 def parse_fields(data_path, out_path):
-    filename = os.path.splitext(os.path.basename(data_path))[0]
     rules = []
     with open(data_path, 'r') as data_file:
         for line in data_file:
@@ -37,7 +37,6 @@ def parse_fields(data_path, out_path):
 
 
 def rules_from_apis(data_path):
-    filename = os.path.splitext(os.path.basename(data_path))[0]
     rules = []
     with open(data_path, 'r') as data_file:
         for line in data_file:
@@ -69,7 +68,7 @@ def rules_from_apis(data_path):
                 'javaMethodName': name,
                 'javaMethodArgs': signature
             }
-            rule['Comment'] = "\n\t{}\n\t==>\n\n".format(api.strip())
+            # rule['Comment'] = "\n\t{}\n\t==>\n\n".format(api.strip())
             rule['Body'] = {}
 
             rules.append(rule)
@@ -98,15 +97,43 @@ def add_typeref(out_path):
             encoding='utf-8', sort_keys=False)
 
 
+def parse_markdown(data_path, language, symbol):
+    import markdown as md
+
+    symbol_headline = '### ' + symbol
+    with open(data_path, 'r') as data_file:
+        for line in data_file:
+            if symbol_headline in line:
+                break
+        table_lines = []
+        for line in data_file:
+            if '|' in line:
+                table_lines.append(line)
+            elif line.startswith('#'):
+                break
+        table = md.markdown(''.join(table_lines))
+        print(table)
+
+
 def main():
     logging.getLogger().setLevel(logging.INFO)
 
-    data_path = sys.argv[1]
-    out_path = sys.argv[2]
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-p', '--path', help='', required=True)
+    parser.add_argument('-o', '--output', help='')
+    parser.add_argument('-v', '--verbose', help='', action='store_true')
+    parser.add_argument('-l', '--language', help='')
+    parser.add_argument('-s', '--symbol', help='', required=True)
 
-    parse_api(data_path, out_path)
-    parse_fields(data_path, out_path)
-    add_typeref(out_path)
+    args = parser.parse_args()
+
+    if args.verbose:
+        logging.getLogger().setLevel(logging.DEBUG)
+
+    data_path = args.path
+    out_path = args.output
+
+    parsed = parse_markdown(data_path, args.language, args.symbol)
 
 
 main()

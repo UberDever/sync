@@ -13,98 +13,10 @@ from collections import namedtuple
 g_language = None
 
 
-def parse_fields(data_path, out_path):
-    rules = []
-    with open(data_path, 'r') as data_file:
-        for line in data_file:
-            if '# Fields' in line:
-                break
-        for field in data_file:
-            field = field.strip()
-            if not len(field):
-                continue
-            if '#' in field:
-                break
-
-            rule = {}
-            rule['Type'] = 'MemberAccessExpressionRule'
-            rule['Attributes'] = {
-                'javaMemberName': field,
-                'arktsName': ""
-            }
-            rules.append(rule)
-    with open(out_path, 'a') as yaml_file:
-        yaml_file.write('#\n# Fields {}\n#\n'.format(
-            os.path.basename(data_path)))
-        yaml.dump(rules, yaml_file, indent=4,
-                  encoding='utf-8', sort_keys=False)
-
-
-def rules_from_apis(data_path):
-    rules = []
-    with open(data_path, 'r') as data_file:
-        for line in data_file:
-            if '# API' in line:
-                break
-
-        for api in data_file:
-            api = api.replace('\xa0', '\x20').replace(u"\u200B", '').strip()
-            if not len(api):
-                continue
-            if '#' in api:
-                break
-
-            paren_i = api.find('(')
-            arg_list = api[paren_i+1:-2]
-            arguments = arg_list.split(',')
-            signature = []
-            for arg in arguments:
-                last_space = arg.rfind(' ')
-                arg_type = arg[:last_space]
-                signature.append(arg_type.strip())
-
-            name = api[:paren_i]
-            signature = ','.join(signature)
-
-            rule = {}
-            rule['Type'] = 'CallExpressionRule'
-            rule['Attributes'] = {
-                'javaMethodName': name,
-                'javaMethodArgs': signature
-            }
-            # rule['Comment'] = "\n\t{}\n\t==>\n\n".format(api.strip())
-            rule['Body'] = {}
-
-            rules.append(rule)
-    return rules
-
-
-def parse_api(data_path, out_path):
-    rules = rules_from_apis(data_path)
-    def grouper(item): return item['Attributes']['javaMethodName']
-    with open(out_path, 'w+') as yaml_file:
-        for key, group_items in itertools.groupby(rules, key=grouper):
-            yaml_file.write('#\n# {}.{}\n#\n'.format(
-                os.path.splitext(os.path.basename(data_path))[0], key))
-            yaml.dump(list(group_items), yaml_file, indent=4,
-                      encoding='utf-8', sort_keys=False)
-
-
-def add_typeref(out_path):
-    with open(out_path, 'a') as yaml_file:
-        yaml.dump([{
-            'Type': 'TypeReferenceRule',
-            'Attributes': {
-                'arktsName': ""
-            }
-        }], yaml_file, indent=4,
-            encoding='utf-8', sort_keys=False)
-
-
 class Converter(object):
     Rule = namedtuple('Rule', ['Type', 'Attributes', 'Body'])
 
-    def _class(self: str, ark_symbol: str) -> Rule:
+    def _class(self, language_symbol: str, ark_symbol: str) -> Rule:
         logging.info('Parsing %s', ark_symbol)
 
         return self.Rule('TypeReferenceRule', {
@@ -146,6 +58,13 @@ class Converter(object):
 
         self.language = language
 
+        handlers = {
+            'Method': self._method,
+            'Constructor': self._method,
+            'Member': self._member,
+            'Module': self._class,
+        }
+
         with open(data_path, 'r') as data_file:
             for line in data_file:
                 if re.match(SYMBOL_RE, line):
@@ -173,18 +92,13 @@ class Converter(object):
                 status = entry_fields[3]
 
                 if status == 'Done':
-                    ark_symbol = 'Same'
+                    continue
 
-                if entry_type == 'Class':
-                    self.rules.append(self._class(ark_symbol))
-                elif entry_type == 'Member':
-                    self.rules.append(self._member(
-                        language_symbol, ark_symbol))
-                elif entry_type == 'Method':
-                    self.rules.append(self._method(
-                        language_symbol, ark_symbol))
+                if entry_type in handlers:
+                    rule = handlers[entry_type](language_symbol, ark_symbol)
+                    self.rules.append(rule)
                 else:
-                    raise Exception(f'Unknown entry type: {entry_type}')
+                    raise Exception('Unknown entry type: ' + entry_type)
 
     def dump(self, output_file):
         rules = [rule._asdict() for rule in self.rules]

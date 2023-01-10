@@ -16,6 +16,9 @@ g_language = None
 class Converter(object):
     Rule = namedtuple('Rule', ['Type', 'Attributes', 'Body'])
 
+    def rule_hash(self, rule: Rule) -> str:
+        return rule.Type + ':' + ':'.join(v for v in rule.Attributes.values() if len(v) > 0)
+
     def _class(self, language_symbol: str, ark_symbol: str) -> Rule:
         logging.info('Parsing %s', ark_symbol)
 
@@ -91,7 +94,7 @@ class Converter(object):
                 ark_symbol = entry_fields[2]
                 status = entry_fields[3]
 
-                if status == 'Done':
+                if status == 'Done' or status == 'TODO':
                     continue
 
                 if entry_type in handlers:
@@ -101,10 +104,29 @@ class Converter(object):
                     raise Exception('Unknown entry type: ' + entry_type)
 
     def dump(self, output_file):
-        rules = [rule._asdict() for rule in self.rules]
+        rules = [dict({'Hash': self.rule_hash(rule)}, **rule._asdict())
+                 for rule in self.rules]
+        try:
+            with open(output_file, 'r') as yaml_file:
+                existing_rules = yaml.load(yaml_file)
+        except:
+            with open(output_file, 'w+') as yaml_file:
+                yaml.dump(rules, yaml_file, indent=4,
+                          encoding='utf-8', sort_keys=False)
+            logging.info(f'Wrote rules to {output_file}')
+            return
+
+        expanded_rules = existing_rules
+        for rule in rules:
+            if any(rule['Hash'] == r['Hash'] for r in existing_rules):
+                continue
+            else:
+                expanded_rules.append(rule)
+
         with open(output_file, 'w+') as yaml_file:
-            yaml.dump(rules, yaml_file, indent=4,
+            yaml.dump(expanded_rules, yaml_file, indent=4,
                       encoding='utf-8', sort_keys=False)
+
         logging.info(f'Wrote rules to {output_file}')
 
     language = None

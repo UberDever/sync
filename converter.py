@@ -57,7 +57,7 @@ class Converter(object):
 
     def __init__(self, data_path, language, ark_symbol):
         HEADING_RE = re.compile(r'^#+ (.*)\n')
-        SYMBOL_RE = re.compile(r'^#+ ' + ark_symbol + r'\n')
+        SYMBOL_RE = re.compile(r'^#+ ' + ark_symbol + r'\s*\n')
 
         self.language = language
 
@@ -108,7 +108,7 @@ class Converter(object):
                  for rule in self.rules]
         try:
             with open(output_file, 'r') as yaml_file:
-                existing_rules = yaml.load(yaml_file)
+                existing_rules = yaml.load(yaml_file, Loader=yaml.Loader)
         except:
             with open(output_file, 'w+') as yaml_file:
                 yaml.dump(rules, yaml_file, indent=4,

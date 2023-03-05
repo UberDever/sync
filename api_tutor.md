@@ -94,7 +94,7 @@ This method modifies the original array and returns it.
 
 ### `Array.entries`
 
-TODO
+TODO: iterator
 
 ### `Array.every`
 
@@ -135,7 +135,7 @@ Filters an array using the specified predicate function. Does not modify the arr
 
 Finds the first element of the array matching the specified predicate
 
-TODO
+TODO: no undefined
 
 ### `Array.findIndex`
 
@@ -202,6 +202,69 @@ Returns true if provided value exists in the array, else otherwise.
     const array = new Array(["some", "strings"])
     console.log(array.includes("hello"))
     // expected output: false
+```
+
+### `Array.indexOf`
+
+Similar to Array.findIndex, but uses equality to test elements
+
+```ts
+    const array = new Array(["here", "are", "some", "words"])
+    const index = array.indexOf("are")
+    console.log(index)
+    // expected output: 1
+
+    const neg_index = array.indexOf("hello")
+    console.log(neg_index)
+    // expected output: -1
+```
+
+### `Array.join`
+
+Joins array elements with specified separator, using toString method on every element of array.
+If no separator is provided, default separator "," (comma) is used.
+
+```ts
+    const array1 = new Array(["some", "body"])
+    const joined1 = array1.join("...")
+    console.log(joined1)
+    // expected output: some...body
+
+    const array2 = new Array([1, 2, 3, 4])
+    const joined2 = array2.join("")
+    console.log(joined2)
+    // expected output: 1234
+```
+
+### `Array.keys` 
+
+TODO: iterator
+
+### `Array.lastIndexOf`
+
+Array is searched backwards, starting from provided fromIndex and index of found element is returned.
+If no element is found, returns -1.
+
+```ts
+    const array = new Array(["a", "b", "c", "c", "d"])
+    const index = array.indexOf("c")
+    console.log(index)
+    // expected output: 3
+
+    const neg_index = array.indexOf("z")
+    console.log(neg_index)
+    // expected output: -1
+```
+
+### `Array.map`
+
+Creates new array, containing results of application of provided function to each element of array.
+
+```ts
+    const array = new Array([1, 2, 3, 4])
+    const powers_of_two = array.map(x => 2 ** x)
+    console.log(powers_of_two)
+    // expected output: [2, 4, 8, 16]
 ```
 
 # TypedArray
@@ -355,7 +418,7 @@ Filters an array using the specified predicate function. Does not modify the arr
 
 Finds the first element of the array matching the specified predicate
 
-TODO
+TODO: iterator
 
 ### `TypedArray.findIndex`
 
@@ -387,4 +450,67 @@ Returns true if provided value exists in the array, else otherwise.
     const array = new Uint32Array([1, 2, 3, 4])
     console.log(array.includes(3))
     // expected output: true
+```
+
+### `TypedArray.indexOf`
+
+Similar to Array.findIndex, but uses equality to test elements
+
+```ts
+    const array = new Uint8Array([0, 132, 4, 221])
+    const index = array.indexOf(4)
+    console.log(index)
+    // expected output: 2
+
+    const neg_index = array.indexOf(42)
+    console.log(neg_index)
+    // expected output: -1
+```
+
+### `TypedArray.join`
+
+Joins array elements with specified separator, using toString method on every element of array.
+If no separator is provided, default separator "," (comma) is used.
+
+```ts
+    const array1 = new Uint32Array([0, 1, 2, 3])
+    const joined1 = array1.join()
+    console.log(joined1)
+    // expected output: 0,1,2,3
+
+    const array2 = new Float64Array([12, 7.25, 5.25, 5.255])
+    const joined2 = array2.join("")
+    console.log(joined2)
+    // expected output: 127.255.255.255
+```
+
+### `TypedArray.keys` 
+
+TODO: iterator
+
+### `Array.lastIndexOf`
+
+Array is searched backwards, starting from provided fromIndex and index of found element is returned.
+If no element is found, returns -1.
+
+```ts
+    const array = new Int8Array([-1, -2, -3, 0, 0, 1])
+    const index = array.indexOf(0)
+    console.log(index)
+    // expected output: 4
+
+    const neg_index = array.indexOf(105)
+    console.log(neg_index)
+    // expected output: -1
+```
+
+### `TypedArray.map`
+
+Creates new array, containing results of application of provided function to each element of array.
+
+```ts
+    const array = new Uint8Array([1, 2, 3, 4])
+    const powers_of_two = array.map(x => 2 ** x)
+    console.log(powers_of_two)
+    // expected output: [2, 4, 8, 16]
 ```

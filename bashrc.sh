@@ -69,3 +69,23 @@ migrate_compile_run() {
     echocolor LIGHTRED "Ark"
     ark asm/$1.abc $1::main
 }
+
+alias panda_cmake="cmake -GNinja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DPANDA_CROSS_COMPILER=false .."
+
+
+panda_build () {
+    cmake -GNinja -DPANDA_WITH_BENCHMARKS=false -DPANDA_CROSS_COMPILER=false $1 ..
+}
+
+panda_update() {
+    cd $panda_dir && 
+        git fetch origin &&
+        git rebase origin/master --autostash &&
+        cd plugins/ecmascript &&
+        git fetch origin &&
+        git rebase origin/master --autostash &&
+        cd es2panda &&
+        git fetch origin &&
+        git rebase origin/master --autostash &&
+        cd $panda_dir
+}

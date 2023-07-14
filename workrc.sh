@@ -59,13 +59,12 @@ panda_build () {
 
 panda_update() {
     cd $panda_dir && 
-        git fetch origin &&
-        git rebase origin/master --autostash &&
+        git fetch $panda_branch &&
+        git rebase $panda_branch/master --autostash &&
         cd plugins/ecmascript &&
-        git fetch origin &&
-        git rebase origin/master --autostash &&
+        git fetch $ecma_branch &&
+        git rebase $ecma_branch/master --autostash &&
         cd es2panda &&
-        git fetch origin &&
-        git rebase origin/master --autostash &&
-        cd $panda_dir
+        git fetch $es2_branch &&
+        git rebase $es2_branch/master --autostash && cd $panda_dir
 }

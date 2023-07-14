@@ -1,5 +1,6 @@
 dev_dir=~/dev
 
+alias vim='nvim'
 alias c='xclip'
 alias v='xclip -o'
 

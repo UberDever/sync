@@ -1,4 +1,4 @@
-. ./bashrc.sh
+dev_dir=~/dev
 panda_dir=$dev_dir/panda
 ecmascript_dir=$panda_dir/plugins/ecmascript
 es2panda_dir=$ecmascript_dir/es2panda

@@ -50,7 +50,15 @@ es2panda() {
     cd $old_pwd
 }
 
-alias panda_cmake="cmake -GNinja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DPANDA_CROSS_COMPILER=false .."
+panda_cmake() {
+    echo "Executing with parameters: " 
+    echo "$@"
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DPANDA_CROSS_COMPILER=false "$@" ..
+}
+
+panda_cmake_es2panda() {
+    panda_cmake -DPANDA_WITH_TESTS=true -DPANDA_WITH_BENCHMARKS=true
+}
 
 
 panda_build () {
@@ -68,3 +76,5 @@ panda_update() {
         git fetch $es2_branch &&
         git rebase $es2_branch/master --autostash && cd $panda_dir
 }
+
+PATH=$PATH:"${panda_dir}/build/bin"

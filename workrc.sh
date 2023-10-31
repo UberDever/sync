@@ -1,7 +1,7 @@
 dev_dir=~/dev
 panda_dir=$dev_dir/panda
 ecmascript_dir=$panda_dir/plugins/ecmascript
-es2panda_dir=$ecmascript_dir/es2panda
+es2panda_dir=$panda_dir/tools/es2panda
 
 sandbox_dir=$dev_dir/sandbox
 asm_dir=$sandbox_dir/asm
@@ -53,11 +53,13 @@ es2panda() {
 panda_cmake() {
     echo "Executing with parameters: " 
     echo "$@"
-    cmake -GNinja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DPANDA_CROSS_COMPILER=false "$@" ..
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DPANDA_CROSS_COMPILER=false "$@"
 }
 
 panda_cmake_es2panda() {
-    panda_cmake -DPANDA_WITH_TESTS=true -DPANDA_WITH_BENCHMARKS=true
+    echo "Executing with parameters: " 
+    echo "$@"
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DPANDA_CROSS_COMPILER=false -DPANDA_WITH_TESTS=true -DPANDA_WITH_BENCHMARKS=true "$@"
 }
 
 
@@ -66,15 +68,19 @@ panda_build () {
 }
 
 panda_update() {
+    b="dev_frontend_team"
+    panda_branch="dev_sasha"
+    ecma_branch="origin"
+    es2_branch="dev_sasha"
     cd $panda_dir && 
         git fetch $panda_branch &&
-        git rebase $panda_branch/master --autostash &&
-        cd plugins/ecmascript &&
+        git rebase $panda_branch/$b --autostash &&
+        cd $ecmascript_dir &&
         git fetch $ecma_branch &&
         git rebase $ecma_branch/master --autostash &&
-        cd es2panda &&
+        cd $es2panda_dir &&
         git fetch $es2_branch &&
-        git rebase $es2_branch/master --autostash && cd $panda_dir
+        git rebase $es2_branch/$b --autostash && cd $panda_dir
 }
 
 PATH=$PATH:"${panda_dir}/build/bin"

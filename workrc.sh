@@ -1,86 +1,43 @@
 dev_dir=~/dev
-panda_dir=$dev_dir/panda
-ecmascript_dir=$panda_dir/plugins/ecmascript
-es2panda_dir=$panda_dir/tools/es2panda
+arkc_dir="$dev_dir/arkcompiler/runtime_core/static_core"
+ets_frontend_dir="$dev_dir/arkcompiler/ets_frontend"
+ets2panda_dir="$ets_frontend_dir/ets2panda"
 
 sandbox_dir=$dev_dir/sandbox
-asm_dir=$sandbox_dir/asm
-# arkts_dir=$sandbox_dir/arkts
-arkts_dir=$es2panda_dir/migrator/test/java-mapper/
 
-ark() {
-    old_pwd=$(pwd)
-    cd $panda_dir/build
-    if [ -z $2 ]; then
-        entry="ETSGLOBAL::main"
-    else
-        entry=$2
-    fi
-    path=$old_pwd/$1 
-    echocolor BLUE "entry: $entry"
-    echocolor BLUE "path: $path"
-    ./bin/ark --log-level=debug --log-components=interpreter --boot-panda-files=plugins/ets/etsstdlib.abc --load-runtimes=ets $path $entry
-    # --log-level=debug --log-components=interpreter
-    cd $old_pwd
-}
-
-ark_disasm() {
-    old_pwd=$(pwd)
-    cd $panda_dir/build
-    base=$(basename $1)
-    name=${base%%.*}
-    path=$old_pwd/$1 
-    out=$asm_dir/$name.cba
-    echocolor BLUE "out: $out"
-    echocolor BLUE "path: $path"
-    ./bin/ark_disasm $path $out
-    cd $old_pwd
-}
-
-es2panda() {
-    old_pwd=$(pwd)
-    cd $panda_dir/build
-    base=$(basename $1)
-    name=${base%%.*}
-    out=$asm_dir/$name.abc 
-    path=$old_pwd/$1
-    echocolor BLUE "out: $out"
-    echocolor BLUE "path: $path"
-    ./bin/es2panda --stdlib=$panda_dir/plugins/ets/stdlib --extension=ets --output=$out --opt-level=0 $path
-    cd $old_pwd
-}
-
-panda_cmake() {
+cmake_arkc() {
     echo "Executing with parameters: " 
     echo "$@"
     cmake -GNinja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DPANDA_CROSS_COMPILER=false "$@"
 }
 
-panda_cmake_es2panda() {
+cmake_ets2panda() {
     echo "Executing with parameters: " 
     echo "$@"
     cmake -GNinja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DPANDA_CROSS_COMPILER=false -DPANDA_WITH_TESTS=true -DPANDA_WITH_BENCHMARKS=true "$@"
 }
 
-
-panda_build () {
-    cmake -GNinja -DPANDA_WITH_BENCHMARKS=false -DPANDA_CROSS_COMPILER=false $1 ..
+update_repo() {
+    if [[ $# -ne 6 ]]; then
+        return
+    fi
+    arkc_origin="${1%%/*}"
+    ecma_origin="${2%%/*}"
+    ets2_origin="${3%%/*}"
+    cd $4 &&
+    git fetch $arkc_origin &&
+    git rebase $1 --autostash &&
+    cd $5 &&
+    git fetch $ecma_origin && 
+    git rebase $2 --autostash &&
+    cd $6 &&
+    git fetch $ets2_origin &&
+    git rebase $3 --autostash && cd $4
 }
 
-panda_update() {
-    b="dev_frontend_team"
-    panda_branch="dev_sasha"
-    ecma_branch="origin"
-    es2_branch="dev_sasha"
-    cd $panda_dir && 
-        git fetch $panda_branch &&
-        git rebase $panda_branch/$b --autostash &&
-        cd $ecmascript_dir &&
-        git fetch $ecma_branch &&
-        git rebase $ecma_branch/master --autostash &&
-        cd $es2panda_dir &&
-        git fetch $es2_branch &&
-        git rebase $es2_branch/$b --autostash && cd $panda_dir
+update_arkc() {
+    arkc_branch="dev/dev_frontend_team"
+    ecma_branch="origin/master"
+    ets2_branch="dev/dev_frontend_team"
+    update_repo $arkc_branch $ecma_branch $ets2_branch $arkc_dir $ets_frontend_dir $ets2panda_dir
 }
-
-PATH=$PATH:"${panda_dir}/build/bin"

@@ -36,8 +36,8 @@ update_repo() {
 }
 
 update_arkc() {
-    arkc_branch="dev/dev_frontend_team"
+    arkc_branch="origin/master"
     ecma_branch="origin/master"
-    ets2_branch="dev/dev_frontend_team"
+    ets2_branch="origin/master"
     update_repo $arkc_branch $ecma_branch $ets2_branch $arkc_dir $ets_frontend_dir $ets2panda_dir
 }

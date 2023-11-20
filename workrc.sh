@@ -1,7 +1,9 @@
 dev_dir=~/dev
-arkc_dir="$dev_dir/arkcompiler/runtime_core/static_core"
+arkc_dir="$dev_dir/arkcompiler"
+core_dir="$arkc_dir/runtime_core/static_core"
 ets_frontend_dir="$dev_dir/arkcompiler/ets_frontend"
 ets2panda_dir="$ets_frontend_dir/ets2panda"
+ets_plugin_dir="$core_dir/plugins/ets"
 
 sandbox_dir=$dev_dir/sandbox
 
@@ -39,5 +41,10 @@ update_arkc() {
     arkc_branch="origin/master"
     ecma_branch="origin/master"
     ets2_branch="origin/master"
-    update_repo $arkc_branch $ecma_branch $ets2_branch $arkc_dir $ets_frontend_dir $ets2panda_dir
+    update_repo $arkc_branch $ecma_branch $ets2_branch $core_dir $ets_frontend_dir $ets2panda_dir
 }
+
+go_arkc() { cd $arkc_dir; }
+go_ets() { cd $ets_frontend_dir; }
+go_core() { cd $core_dir; }
+go_ets_plugin() { cd $ets_plugin_dir; }

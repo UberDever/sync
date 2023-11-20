@@ -22,7 +22,7 @@ cmake_es2panda() {
     echo "Executing: " 
     echo "cmake -GNinja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang 
         -DPANDA_CROSS_COMPILER=false -DPANDA_WITH_TESTS=true -DPANDA_WITH_BENCHMARKS=true 
-        -DES2PANDA_PATH='$ets_frontend_dir/es2panda'
+        -DES2PANDA_PATH="$es2panda_dir"
         $@"
     cmake -GNinja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang \
         -DPANDA_CROSS_COMPILER=false -DPANDA_WITH_TESTS=true \

@@ -1,9 +1,9 @@
-dev_dir=~/dev
-arkc_dir="$dev_dir/arkcompiler"
-core_dir="$arkc_dir/runtime_core/static_core"
-ets_frontend_dir="$dev_dir/arkcompiler/ets_frontend"
-es2panda_dir="$ets_frontend_dir/ets2panda"
-ets_plugin_dir="$core_dir/plugins/ets"
+export dev_dir=~/dev
+export arkc_dir="$dev_dir/arkcompiler"
+export core_dir="$arkc_dir/runtime_core/static_core"
+export ets_frontend_dir="$dev_dir/arkcompiler/ets_frontend"
+export es2panda_dir="$ets_frontend_dir/ets2panda"
+export ets_plugin_dir="$core_dir/plugins/ets"
 
 sandbox_dir=$dev_dir/sandbox
 

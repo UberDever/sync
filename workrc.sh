@@ -20,14 +20,9 @@ cmake_arkc_default() {
 
 cmake_es2panda() {
     echo "Executing: " 
-    echo "cmake -GNinja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang 
-        -DPANDA_CROSS_COMPILER=false -DPANDA_WITH_TESTS=true -DPANDA_WITH_BENCHMARKS=true 
-        -DES2PANDA_PATH="$es2panda_dir"
-        $@"
-    cmake -GNinja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang \
-        -DPANDA_CROSS_COMPILER=false -DPANDA_WITH_TESTS=true \
-        -DES2PANDA_PATH="$es2panda_dir"\
-        "$@"
+    cmd="cmake -GNinja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DPANDA_CROSS_COMPILER=false -DPANDA_WITH_TESTS=true -DPANDA_WITH_BENCHMARKS=true -DPANDA_ETS_INTEROP_JS=ON -DES2PANDA_PATH="$es2panda_dir" $@"
+    echo $cmd
+    eval "$cmd"
 }
 
 cmake_es2panda_default() {
@@ -63,3 +58,6 @@ cd_arkc() { cd $arkc_dir; }
 cd_ets() { cd $ets_frontend_dir; }
 cd_core() { cd $core_dir; }
 cd_ets_plugin() { cd $ets_plugin_dir; }
+cd_build() { cd_arkc && cd build; }
+
+build_ets_example() { ./bin/es2panda --output example.abc $@ _.ets; }

@@ -47,11 +47,22 @@ update_repo() {
     git rebase $3 --autostash && cd $4
 }
 
-update_arkc() {
+git_rebase_arkc() {
     arkc_branch="origin/master"
     ecma_branch="origin/master"
     es2_branch="origin/master"
     update_repo $arkc_branch $ecma_branch $es2_branch $core_dir $ets_frontend_dir $es2panda_dir
+}
+
+git_switch_arkc() {
+    if [[ $# -ne 1 ]]; then
+        echo "Please provide branch to switch to"
+    fi
+    cd_ets
+    git switch "$1"
+    cd_core
+    git switch "$1"
+    cd_arkc
 }
 
 cd_arkc() { cd $arkc_dir; }
@@ -60,4 +71,4 @@ cd_core() { cd $core_dir; }
 cd_ets_plugin() { cd $ets_plugin_dir; }
 cd_build() { cd_arkc && cd build; }
 
-build_ets_example() { ./bin/es2panda --output example.abc $@ _.ets; }
+es2panda_ets_example() { ./bin/es2panda --output example.abc $@ _.ets; }

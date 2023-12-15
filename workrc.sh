@@ -47,10 +47,17 @@ update_repo() {
     git rebase $3 --autostash && cd $4
 }
 
+git_rebase_arkc_master() {
+    git_rebase_arkc "origin/master"
+}
+
 git_rebase_arkc() {
-    arkc_branch="origin/master"
-    ecma_branch="origin/master"
-    es2_branch="origin/master"
+    if [[ $# -ne 1 ]]; then
+        echo "Please provide branch to rebase to"
+    fi
+    arkc_branch="$1"
+    ecma_branch="$1"
+    es2_branch="$1"
     update_repo $arkc_branch $ecma_branch $es2_branch $core_dir $ets_frontend_dir $es2panda_dir
 }
 

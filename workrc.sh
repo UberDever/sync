@@ -29,7 +29,7 @@ cmake_es2panda_default() {
     cmake_es2panda $core_dir
 }
 
-update_repo() {
+git_rebase() {
     if [[ $# -ne 6 ]]; then
         return
     fi
@@ -58,7 +58,8 @@ git_rebase_arkc() {
     arkc_branch="$1"
     ecma_branch="$1"
     es2_branch="$1"
-    update_repo $arkc_branch $ecma_branch $es2_branch $core_dir $ets_frontend_dir $es2panda_dir
+    git_rebase $arkc_branch $ecma_branch $es2_branch $core_dir $ets_frontend_dir $es2panda_dir
+    cd_arkc
 }
 
 git_switch_arkc() {

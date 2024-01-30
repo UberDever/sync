@@ -6,7 +6,7 @@ def add-to-list [v: list<string>, path: string]: list<string> -> list<string> {
 
 export-env {
     # config
-    # $env.config = ($env.config | upsert edit_mode vi)
+    $env.config = ($env.config | upsert edit_mode vi)
     $env.config = ($env.config | upsert show_banner false)
 
     # PATH

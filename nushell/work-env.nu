@@ -1,7 +1,4 @@
-const arkc = '~/dev' + '/arkcompiler'
-const core = $arkc + '/runtime_core/static_core'
-const ets_frontend = $arkc + '/ets_frontend'
-const ets_plugin = $core + '/plugins/ets'
+use ~/dev/sync/nushell/vars.nu *
 
 export-env {
     $env.WORK_DIRS = ({} 

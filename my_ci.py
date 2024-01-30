@@ -30,7 +30,8 @@ def generate_usage(filepath) -> str:
 def run_command_with_check(cmd, cwd) -> str:
     result = subprocess.run(cmd, encoding='UTF-8', cwd=cwd,
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    if not result.returncode:
+    if result.returncode != 0:
+        print(f"Failed with returncode {result.returncode}")
         print(result.stderr)
         exit(-1)
     output = result.stdout
@@ -42,29 +43,33 @@ def get_changed_files(cwd) -> str:
                '--name-only', '-r', 'HEAD']
     changed = run_command_with_check(git_cmd, cwd)
     paths = changed.split('\n')
-    names = [os.path.basename(path) for path in paths]
-    return "|".join(names)
+    return [p for p in paths if len(p)]
 
 
-def run_clang_tidy_check(check_str, cwd) -> str:
-    clang_tidy_cmd = [os.path.join(ENV('core_dir'),
-                                   "scripts",
-                                   "clang-tidy",
-                                   "clang_tidy_check.py",
-                                   ),
-                      '--filename-filter='+check_str,
-                      ENV('core_dir'),
-                      os.path.join(ENV('arkc_dir'), 'build'),
-                      ]
-    proc = subprocess.Popen(
-        clang_tidy_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    for line in io.TextIOWrapper(proc.stdout, encoding="utf-8"):
-        yield line
+def run_clang_tidy_check(paths, cwd) -> str:
+    def clang_tidy_cmd(path): return [os.path.join(ENV('core_dir'),
+                                                   "scripts",
+                                                   "clang-tidy",
+                                                   "clang_tidy_check.py",
+                                                   ),
+                                      '--filename-filter=' + path,
+                                      ENV('core_dir'),
+                                      os.path.join(ENV('arkc_dir'), 'build'),
+                                      ]
+
+    for path in paths:
+        cmd = clang_tidy_cmd(path)
+        print(f"Running {cmd}")
+        proc = subprocess.Popen(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        for line in io.TextIOWrapper(proc.stdout, encoding="utf-8"):
+            yield line
 
 # The Commands
 
 
-def clang_tidy():
+def clang_tidy():  # get cwd and run clang-tidy check on the files that changed by git diff-tree command
+    print(f"Looking for git in {os.getcwd()}")
     to_check = get_changed_files(os.getcwd())
     for line in run_clang_tidy_check(to_check, os.getcwd()):
         print(line)

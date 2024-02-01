@@ -17,7 +17,7 @@ def jump-locations [] {
     ]
 }
 
-export def --env tp [loc: string@jump-locations] {
+export def --env my [loc: string@jump-locations] {
     cd (jump-locations | where value == $loc | get description | get 0)
 }
 

@@ -4,10 +4,22 @@ def add-to-list [v: list<string>, path: string]: list<string> -> list<string> {
     ($v | split row (char esep) | append $path)
 }
 
+# update (find-index $env.config.keybindings { where item.name == "cut_line_from_start" }) {
+def find-index [v: list, pred: closure]: list -> int {
+    $v | enumerate | do $pred | get index | if ($in | is-empty) { (-1) } else { $in | get 0 }
+}
+
 export-env {
     # config
-    $env.config = ($env.config | upsert edit_mode vi)
     $env.config = ($env.config | upsert show_banner false)
+    $env.config.keybindings = ($env.config.keybindings |
+    append {
+        name: cut_line_from_start
+        modifier: control
+        keycode: char_u
+        mode: [emacs, vi_insert]
+        event: {edit: cutfromstart}
+    })
 
     # PATH
     $env.PATH = (add-to-list $env.PATH ($env.HOME + '/.dotnet'))
@@ -18,9 +30,4 @@ export-env {
 
     # env vars
     $env.EDITOR = (scope aliases | where name == 'vim' | get expansion)
-    $env.UBER = ({}
-        | insert dev $dev
-        | insert sandbox $sandbox
-        | insert sync $sync
-    )
 }

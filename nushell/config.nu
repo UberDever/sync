@@ -1,33 +1,70 @@
-use ~/dev/sync/nushell/vars.nu *
+use ~/dev/sync/nushell/vars.nu
+use ~/dev/sync/nushell/commands.nu [
+    jump-locations, run-cmake, git-rebase, git-reset
+]
 
-def add-to-list [v: list<string>, path: string]: list<string> -> list<string> {
-    ($v | split row (char esep) | append $path)
+export alias vim = ~/apps/nvim/bin/nvim
+export alias c = xclip
+export alias v = xclip -o
+
+export def --env my [loc: string@jump-locations] {
+    cd (jump-locations | where value == $loc | get description | get 0)
 }
 
-# update (find-index $env.config.keybindings { where item.name == "cut_line_from_start" }) {
-def find-index [v: list, pred: closure]: list -> int {
-    $v | enumerate | do $pred | get index | if ($in | is-empty) { (-1) } else { $in | get 0 }
+
+# WORK WORK
+
+def "es2panda selfcheck" [] {
+    ^($vars.dev_dir + /gitee_sync/selfcheck.sh) --configure --build=tests_full --run-func-suite --run-cts
 }
 
-export-env {
-    # config
-    $env.config = ($env.config | upsert show_banner false)
-    $env.config.keybindings = ($env.config.keybindings |
-    append {
-        name: cut_line_from_start
-        modifier: control
-        keycode: char_u
-        mode: [emacs, vi_insert]
-        event: {edit: cutfromstart}
-    })
-
-    # PATH
-    $env.PATH = (add-to-list $env.PATH ($env.HOME + '/.dotnet'))
-    $env.PATH = (add-to-list $env.PATH ($env.HOME + '/.dotnet/tools'))
-    for $app in (ls '~/apps' | where type == 'dir' | get name) { 
-        $env.PATH = (add-to-list $env.PATH ($app + /bin))
-    }
-
-    # env vars
-    $env.EDITOR = (scope aliases | where name == 'vim' | get expansion)
+def "arkc cmake" [...flags: string, --default] {
+    # -DPANDA_WITH_BENCHMARKS=true \
+    let cmake_flags = "-GNinja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DPANDA_CROSS_COMPILER=false"
+    let default_dir = if $default { $vars.core_dir } else { "" }
+    run-cmake $cmake_flags $default_dir ...$flags 
 }
+
+def "es2panda cmake" [...flags: string, --default] {
+    let cmake_flags = "-GNinja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DPANDA_CROSS_COMPILER=false -DPANDA_WITH_TESTS=true -DPANDA_WITH_BENCHMARKS=true -DPANDA_ETS_INTEROP_JS=ON -DES2PANDA_PATH=" + $vars.es2panda_dir
+    let default_dir = if $default { $vars.es2panda_dir } else { "" }
+    run-cmake $cmake_flags $default_dir ...$flags 
+}
+
+def "core git rebase" [remote: string = "origin/master"] {
+    print $"Rebasing onto ($remote) in ($vars.core_dir)"
+    git-rebase $remote $vars.core_dir
+}
+
+def "etsfront git rebase" [remote: string = "origin/master"] {
+    print $"Rebasing onto ($remote) in ($vars.etsfrontend_dir)"
+    git-rebase $remote $vars.etsfrontend_dir
+}
+
+def "core git reset" [remote: string = "origin/master"] {
+    print $"Resetting to ($remote) in ($vars.core_dir)"
+    git-reset $remote $vars.core_dir
+}
+
+def "etsfront git reset" [remote: string = "origin/master"] {
+    print $"Resetting to ($remote) in ($vars.etsfrontend_dir)"
+    git-reset $remote $vars.etsfrontend_dir
+}
+
+def "core git switch" [branch: string] {
+    print $"Switching to ($branch) in ($vars.core_dir)"
+    cd $vars.core_dir
+    git switch $branch
+}
+
+def "etsfront git switch" [branch: string] {
+    print $"Switching to ($branch) in ($vars.etsfrontend_dir)"
+    cd $vars.etsfrontend_dir
+    git switch $branch
+}
+
+def "arkc git switch" [branch: string] {
+    core git switch $branch
+    es2panda git switch $branch
+}
+

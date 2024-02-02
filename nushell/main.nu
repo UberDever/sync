@@ -1,5 +1,5 @@
-use ~/dev/sync/nushell/config.nu
-source ~/dev/sync/nushell/commands.nu
+use ~/dev/sync/nushell/env.nu
+source ~/dev/sync/nushell/config.nu
 source ~/dev/sync/nu_scripts/custom-completions/git/git-completions.nu
 source ~/dev/sync/nu_scripts/custom-completions/make/make-completions.nu
 source ~/dev/sync/nu_scripts/custom-completions/vscode/vscode-completions.nu

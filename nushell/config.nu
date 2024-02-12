@@ -14,8 +14,8 @@ export def --env my [loc: string@jump-locations] {
 
 # WORK WORK
 
-def "es2panda selfcheck" [] {
-    ^($vars.dev_dir + /gitee_sync/selfcheck.sh) --configure --build=tests_full --run-func-suite --run-cts
+def "arkc selfcheck" [] {
+    ^($vars.dev_dir + /gitee_sync/selfcheck.sh) --configure --build=tests_full --run-func-suite --run-cts --build-clean
 }
 
 def "arkc cmake" [...flags: string, --default] {
@@ -25,9 +25,9 @@ def "arkc cmake" [...flags: string, --default] {
     run-cmake $cmake_flags $default_dir ...$flags 
 }
 
-def "es2panda cmake" [...flags: string, --default] {
+def "etsfront cmake" [...flags: string, --default] {
     let cmake_flags = "-GNinja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DPANDA_CROSS_COMPILER=false -DPANDA_WITH_TESTS=true -DPANDA_WITH_BENCHMARKS=true -DPANDA_ETS_INTEROP_JS=ON -DES2PANDA_PATH=" + $vars.es2panda_dir
-    let default_dir = if $default { $vars.es2panda_dir } else { "" }
+    let default_dir = if $default { $vars.core_dir } else { "" }
     run-cmake $cmake_flags $default_dir ...$flags 
 }
 
@@ -66,5 +66,17 @@ def "etsfront git switch" [branch: string] {
 def "arkc git switch" [branch: string] {
     core git switch $branch
     es2panda git switch $branch
+}
+
+def "arkc clang-tidy" [] {
+    git diff-tree --no-commit-id --name-only -r HEAD |
+    split row "\n" |
+    filter { $in != "" } |
+    each { 
+        |it|
+        let filter = $"--filename-filter=.*($it)"
+        print $"Processing: ($it) with ($filter)"
+        /home/huawei/dev/arkcompiler/runtime_core/static_core/scripts/clang-tidy/clang_tidy_check.py $filter $vars.core_dir $"($vars.arkc_dir)/build"
+    }
 }
 

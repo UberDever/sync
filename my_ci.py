@@ -7,9 +7,11 @@ import io
 
 COMMANDS_MARK = "# " + "The Commands"
 
+env = {}
+
 
 def ENV(name) -> str:
-    return os.environ[name]
+    return env[name]
 
 
 def generate_usage(filepath) -> str:
@@ -59,7 +61,7 @@ def run_clang_tidy_check(paths, cwd) -> str:
 
     for path in paths:
         cmd = clang_tidy_cmd(path)
-        print(f"Running {cmd}")
+        print(f"Running {' '.join(cmd)}")
         proc = subprocess.Popen(
             cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         for line in io.TextIOWrapper(proc.stdout, encoding="utf-8"):
@@ -80,9 +82,12 @@ def some_command(): pass
 
 if __name__ == "__main__":
     usage = generate_usage(os.path.abspath(__file__))
-    if len(sys.argv) == 1:
+    usage += "Usage: <arkc_dir> <core_dir> <command to run>"
+    if len(sys.argv) <= 3:
         print(usage)
         exit(0)
-    cmd = sys.argv[1]
-    args = ['"' + arg + '"' for arg in sys.argv[2:]]
+    env['arkc_dir'] = sys.argv[1]
+    env['core_dir'] = sys.argv[2]
+    cmd = sys.argv[3]
+    args = ['"' + arg + '"' for arg in sys.argv[4:]]
     eval(cmd + "({0})".format(",".join(args)))

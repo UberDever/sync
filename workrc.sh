@@ -83,4 +83,4 @@ es2panda_ets_example() { ./bin/es2panda --output example.abc $@ _.ets; }
 
 # function errors_json { I=1; cat out.txt | while read line; do if [[ $line == {* ]]; then sed -n ${I}p out.txt | jq | less; break; else I=$[$I +1]; fi done; }
 # function gen_stdlib { ./bin/es2panda --gen-stdlib --extension=ets --verifier-errors="ArithmeticOperationValidForAll,ForLoopCorrectlyInitializedForAll,SequenceExpressionHasLastTypeForAll,NodeHasTypeForAll" --output=./plugins/ets/etsstdlib.abc &> out.txt }
-function selfcheck { ~/dev/sandbox/gitee_sync/selfcheck.sh --configure --build=tests_full --run-func-suite --run-cts; }
+function selfcheck { ~/dev/gitee_sync/selfcheck.sh --configure --build=tests_full --run-func-suite --run-cts --build-clean --es2panda-dir=$es2panda_dir; }

@@ -1,4 +1,4 @@
-export const dev_dir = '~/dev'
+export const dev_dir = '/home/huawei/dev'
 export const sandbox_dir = $dev_dir + '/sandbox'
 export const sync_dir = $dev_dir + '/sync'
 export const arkc_dir = $dev_dir + '/arkcompiler'

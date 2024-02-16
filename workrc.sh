@@ -1,11 +1,27 @@
-export dev_dir=~/dev
 export arkc_dir="$dev_dir/arkcompiler"
 export core_dir="$arkc_dir/runtime_core/static_core"
-export ets_frontend_dir="$dev_dir/arkcompiler/ets_frontend"
+export ets_frontend_dir="$arkc_dir/ets_frontend"
 export es2panda_dir="$ets_frontend_dir/ets2panda"
 export ets_plugin_dir="$core_dir/plugins/ets"
+export used_arkc="arkcompiler"
 
-sandbox_dir=$dev_dir/sandbox
+use_panda() {
+    export arkc_dir="$dev_dir/panda"
+    export core_dir="$arkc_dir/runtime_core/static_core"
+    export ets_frontend_dir="$arkc_dir/ets_frontend"
+    export es2panda_dir="$ets_frontend_dir/ets2panda"
+    export ets_plugin_dir="$core_dir/plugins/ets"
+    export used_arkc="panda"
+}
+
+use_arkcompiler() {
+    export arkc_dir="$dev_dir/arkcompiler"
+    export core_dir="$arkc_dir/runtime_core/static_core"
+    export ets_frontend_dir="$arkc_dir/ets_frontend"
+    export es2panda_dir="$ets_frontend_dir/ets2panda"
+    export ets_plugin_dir="$core_dir/plugins/ets"
+    export used_arkc="arkcompiler"
+}
 
 cmake_arkc() {
     echo "Executing with parameters: " 
@@ -29,58 +45,27 @@ cmake_es2panda_default() {
     cmake_es2panda $core_dir
 }
 
-git_rebase() {
-    if [[ $# -ne 6 ]]; then
-        return
-    fi
-    arkc_origin="${1%%/*}"
-    ecma_origin="${2%%/*}"
-    es2_origin="${3%%/*}"
-    cd $4 &&
-    git fetch $arkc_origin &&
-    git rebase $1 --autostash &&
-    cd $5 &&
-    git fetch $ecma_origin && 
-    git rebase $2 --autostash &&
-    cd $6 &&
-    git fetch $es2_origin &&
-    git rebase $3 --autostash && cd $4
-}
-
-git_rebase_arkc_master() {
-    git_rebase_arkc "origin/master"
-}
-
-git_rebase_arkc() {
-    if [[ $# -ne 1 ]]; then
-        echo "Please provide branch to rebase to"
-    fi
-    arkc_branch="$1"
-    ecma_branch="$1"
-    es2_branch="$1"
-    git_rebase $arkc_branch $ecma_branch $es2_branch $core_dir $ets_frontend_dir $es2panda_dir
-    cd_arkc
-}
-
-git_switch_arkc() {
-    if [[ $# -ne 1 ]]; then
-        echo "Please provide branch to switch to"
-    fi
-    cd_ets
-    git switch "$1"
-    cd_core
-    git switch "$1"
-    cd_arkc
-}
-
-cd_arkc() { cd $arkc_dir; }
-cd_ets() { cd $ets_frontend_dir; }
-cd_core() { cd $core_dir; }
-cd_ets_plugin() { cd $ets_plugin_dir; }
-cd_build() { cd_arkc && cd build; }
+cd_arkc() { echo "In $used_arkc"; cd $arkc_dir; }
+cd_ets() { echo "In $used_arkc"; cd $ets_frontend_dir; }
+cd_core() { echo "In $used_arkc"; cd $core_dir; }
+cd_ets_plugin() { echo "In $used_arkc"; cd $ets_plugin_dir; }
+cd_build() { echo "In $used_arkc"; cd_arkc && cd build; }
 
 es2panda_ets_example() { ./bin/es2panda --output example.abc $@ _.ets; }
 
 # function errors_json { I=1; cat out.txt | while read line; do if [[ $line == {* ]]; then sed -n ${I}p out.txt | jq | less; break; else I=$[$I +1]; fi done; }
 # function gen_stdlib { ./bin/es2panda --gen-stdlib --extension=ets --verifier-errors="ArithmeticOperationValidForAll,ForLoopCorrectlyInitializedForAll,SequenceExpressionHasLastTypeForAll,NodeHasTypeForAll" --output=./plugins/ets/etsstdlib.abc &> out.txt }
 function selfcheck { ~/dev/gitee_sync/selfcheck.sh --configure --build=tests_full --run-func-suite --run-cts --build-clean --es2panda-dir=$es2panda_dir; }
+
+function both { 
+    if [[ $# -lt 1 ]]; then
+        echo "Please input command to execute in both repos."
+        echo "./both <cmd> <arg1> ... <argn>"
+    fi
+    command=$1
+    shift
+    cd $core_dir &&
+    $command "$@"
+    cd $ets_frontend_dir &&
+    $command "$@"
+}

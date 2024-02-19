@@ -30,4 +30,6 @@ gitee_sync_dir=$dev_dir/gitee_sync
 cd_sync() { cd $sync_dir; }
 cd_sync_gitee() { cd $gitee_sync_dir; }
 
+export PS1='\[\e[32m\]\w\[\e[33m\]$(__git_ps1)\[\e[00m\]$ '
+
 . ~/dev/sync/workrc.sh

@@ -3,6 +3,7 @@ export core_dir="$arkc_dir/runtime_core/static_core"
 export ets_frontend_dir="$arkc_dir/ets_frontend"
 export es2panda_dir="$ets_frontend_dir/ets2panda"
 export ets_plugin_dir="$core_dir/plugins/ets"
+export ecmascript_dir="$core_dir/plugins/ecmascript"
 export used_arkc="arkcompiler"
 
 use_panda() {
@@ -59,9 +60,9 @@ es2panda_ets_example() { ./bin/es2panda --output example.abc $@ _.ets; }
 # function gen_stdlib { ./bin/es2panda --gen-stdlib --extension=ets --verifier-errors="ArithmeticOperationValidForAll,ForLoopCorrectlyInitializedForAll,SequenceExpressionHasLastTypeForAll,NodeHasTypeForAll" --output=./plugins/ets/etsstdlib.abc &> out.txt }
 function selfcheck { ~/dev/gitee_sync/selfcheck.sh --configure --root-dir=$arkc_dir --build-dir=$arkc_dir/build --build=tests_full --run-func-suite --run-cts --build-clean --es2panda-dir=$es2panda_dir; }
 
-function both { 
+function forall-bz { 
     if [[ $# -lt 1 ]]; then
-        echo "Please input command to execute in both repos."
+        echo "Please input command to execute in blue zone repos (ets_frontend, runtime_core, ecmascript)."
         echo "./both <cmd> <arg1> ... <argn>"
     fi
     command=$1
@@ -70,4 +71,8 @@ function both {
     $command "$@"
     cd $ets_frontend_dir &&
     $command "$@"
+    if [[ -d $ecmascript_dir ]]; then
+        cd $ecmascript_dir
+        $command "$@"
+    fi
 }

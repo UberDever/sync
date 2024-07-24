@@ -64,6 +64,7 @@ function forall-bz {
     if [[ $# -lt 1 ]]; then
         echo "Please input command to execute in blue zone repos (ets_frontend, runtime_core, ecmascript)."
         echo "./both <cmd> <arg1> ... <argn>"
+        return -1
     fi
     command=$1
     shift
@@ -75,4 +76,18 @@ function forall-bz {
         cd $ecmascript_dir
         $command "$@"
     fi
+}
+
+function git_fetch_reset_bz {
+    origin="origin"
+    master="master"
+    if [[ $# -lt 2 ]]; then
+        echo "Using default origin/master"
+    else 
+        origin="$1"
+        master="$2"
+    fi
+    forall-bz git switch $master
+    forall-bz git fetch $origin
+    forall-bz git reset --hard $origin/$master
 }

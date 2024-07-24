@@ -50,6 +50,7 @@ cd_arkc() { echo "In $used_arkc"; cd $arkc_dir; }
 cd_ets() { echo "In $used_arkc"; cd $ets_frontend_dir; }
 cd_core() { echo "In $used_arkc"; cd $core_dir; }
 cd_ets_plugin() { echo "In $used_arkc"; cd $ets_plugin_dir; }
+cd_ecmascript() { echo "In $used_arkc"; cd $ecmascript_dir; }
 cd_buildr() { echo "In $used_arkc"; cd_arkc && cd build-release; }
 cd_buildd() { echo "In $used_arkc"; cd_arkc && cd build-debug; }
 cd_build() { cd_buildd; }

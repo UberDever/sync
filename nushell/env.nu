@@ -15,7 +15,7 @@ export-env {
     }
 
     # env vars
-    $env.EDITOR = ~/apps/nvim/bin/nvim
+    $env.EDITOR = "~/apps/nvim/bin/nvim"
     $env.my = {
         dev_dir: $vars.dev_dir,
         sandbox_dir: $vars.sandbox_dir,

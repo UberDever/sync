@@ -30,4 +30,4 @@ cd_sync() { cd $sync_dir; }
 
 export PS1='\[\e[32m\]\w\[\e[33m\]$(__git_ps1)\[\e[00m\]$ '
 
-. z.sh
+. "$sync_dir/z.sh"
